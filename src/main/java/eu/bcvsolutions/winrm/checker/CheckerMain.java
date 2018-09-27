@@ -23,7 +23,6 @@ public class CheckerMain {
 	
 	public static final String DEFAULT_AUTH_METHOD = "Basic";
 	public static final String DEFAULT_REMOTE_COMMAND = "Winrm id";
-	//public static final String DEFAULT_REMOTE_COMMAND = "Winrm id –r:machinename";
 	
 	public static final int DEFAULT_CONNECTION_RETRIES = 3;
 
@@ -164,13 +163,13 @@ public class CheckerMain {
 		log.log("Executing command '" + cmd + "'...");
 		WinRmToolResponse rmresponse = rmtool.executeCommand(cmd);
 		log.log("Done.");
-		log.log("Response STDOUT: " + rmresponse.getStdOut());
-		log.log("Response STDERR: " + rmresponse.getStdErr());
+		log.log("Response STDOUT:\n" + rmresponse.getStdOut());
+		log.log("Response STDERR:\n" + rmresponse.getStdErr());
 		log.log("Response status code: " + rmresponse.getStatusCode());
 		
 		//cleanup
 		rmctx.shutdown();
-
+		log.log("Exiting.");
 	}
 	
 }
