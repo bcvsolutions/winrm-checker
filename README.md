@@ -4,17 +4,17 @@ Java utility for interacting with WinRM interface.
 ## Features ##
 - HTTP Basic authentication
 - Running CMD commands
-- Running PS commands **(not implemented yet)**
+- Running PS commands
 - Simple STDOUT logging
 - HTTP support
-- HTTPS support **(should be working, not tested yet)**
+- HTTPS support
 
 ## Building ##
-- Have at least Java 8.
+- Have at least Java 8, Git and recent Maven installed.
 - Clone the repository.
-- Import existing maven project into your IDE.
-- Run/debug the project (if you want to hack on it).
-- Use your IDE capabilities to export runnable jar file. (For example *File -> Export -> Runnable JAR file* in Eclipse.) **The "maven package" currently does not produce working JAR because of missing CXF integration in the project POM.**
+- Hack on the project. (optional)
+- Use **./build.sh** or **mvn clean package** to build the jar.
+- Run the jar according to usage.
 
 ## Usage ##
 ```
@@ -22,11 +22,12 @@ java -jar winrm-checker.jar
 Unable to parse command line arguments.
 Missing required options: h, p, u, w
 
-usage: java -jar winrm-checker-jar-with-dependencies.jar
+usage: java -jar winrm-checker.jar
+ -1         Invoke command using PoweShell.
  -a <arg>   Authentication method. Default: Basic. Implemented: Basic.
  -c <arg>   Non-PS command to execute. Default: Winrm id
  -h <arg>   Target hostname or IP address.
- -k         Ignore HTTPS certificate problems.
+ -k         Ignore HTTPS certificate problems. Currently DOES NOT work.
  -p <arg>   Target port.
  -s         Use HTTPS.
  -u <arg>   Username.

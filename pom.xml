@@ -1,5 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>eu.bcvsolutions.winrm</groupId>
 	<artifactId>winrm-checker</artifactId>
@@ -11,7 +11,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jdk.version>1.8</jdk.version>
 	</properties>
-  
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -30,10 +29,8 @@
 			<version>1.4</version>
 		</dependency>
 	</dependencies>
-	
 	<build>
 		<finalName>winrm-checker</finalName>
-		
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -44,20 +41,18 @@
 					<target>${jdk.version}</target>
 				</configuration>
 			</plugin>
- 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>3.1.0</version>
 				<configuration>
-		 			<archive>
+					<archive>
 						<manifest>
 							<mainClass>eu.bcvsolutions.winrm.checker.CheckerMain</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
 			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -71,7 +66,7 @@
 					</execution>
 				</executions>
 				<configuration>
-		 			<archive>
+					<archive>
 						<manifest>
 							<mainClass>eu.bcvsolutions.winrm.checker.CheckerMain</mainClass>
 						</manifest>
@@ -80,6 +75,69 @@
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.2.0</version>
+				<configuration>
+					<createDependencyReducedPom>false</createDependencyReducedPom>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<transformers>
+								<!--  transformers for CXF (see http://stackoverflow.com/a/9069435/61298) -->
+								<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/spring.handlers</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/services/com.sun.tools.xjc.Plugin</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/spring.schemas</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/cxf/cxf.extension</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+									<resource>META-INF/extensions.xml</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+									<resource>META-INF/cxf/extensions.xml</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/cxf/bus-extensions.txt</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+									<resource>META-INF/cxf/bus-extensions.xml</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+									<resource>META-INF/wsdl.plugin.xml</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+									<resource>META-INF/tools.service.validator.xml</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+									<resource>META-INF/cxf/java2wsbeans.xml</resource>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.cxf</groupId>
+						<artifactId>cxf-buildtools</artifactId>
+						<version>2.2.12</version>
+						<type>jar</type>
+						<scope>compile</scope>
+					</dependency>
+				</dependencies>
 			</plugin>
 		</plugins>
 	</build>

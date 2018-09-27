@@ -23,6 +23,7 @@ public class CheckerMain {
 	
 	public static final String DEFAULT_AUTH_METHOD = "Basic";
 	public static final String DEFAULT_REMOTE_COMMAND = "Winrm id";
+	public static final String DEFAULT_REMOTE_PS_COMMAND = "Get-Host";
 	
 	public static final int DEFAULT_CONNECTION_RETRIES = 3;
 
@@ -59,7 +60,7 @@ public class CheckerMain {
 		
 		final Option ignoreCertProblemOpt = Option.builder("k")
 				.hasArg(false)
-				.desc("Ignore HTTPS certificate problems.")
+				.desc("Ignore HTTPS certificate problems. Currently DOES NOT work.")
 				.required(false)
 				.type(Boolean.class)
 				.build();
@@ -97,6 +98,14 @@ public class CheckerMain {
 				.build();
 		cliOpts.addOption(cmdOpt);
 		
+		final Option psOpt = Option.builder("1")
+				.hasArg(false)
+				.desc("Invoke command using PoweShell.")
+				.required(false)
+				.type(String.class)
+				.build();
+		cliOpts.addOption(psOpt);
+		
 		// parse options from command line, exit on error
 		CommandLineParser cliParser = new DefaultParser();
 		CommandLine cli = null;
@@ -106,7 +115,7 @@ public class CheckerMain {
 			System.out.println("Unable to parse command line arguments.");
 			System.out.println(e.getMessage());
 			System.out.println();
-			new HelpFormatter().printHelp("java -jar winrm-checker-jar-with-dependencies.jar", cliOpts);
+			new HelpFormatter().printHelp("java -jar winrm-checker.jar", cliOpts);
 			System.exit(1);
 		}
 		
@@ -124,6 +133,7 @@ public class CheckerMain {
 		String user = cli.getOptionValue("u");
 		String pass = cli.getOptionValue("w");
 		String cmd = cli.getOptionValue("c");
+		boolean ps = cli.hasOption("1");
 		
 		log.log("Host: " + host);
 		log.log("Port: " + port);
@@ -133,6 +143,7 @@ public class CheckerMain {
 		log.log("Username: " + user);
 		log.log("Password: " + pass);
 		log.log("Remote command: " + cmd);
+		log.log("Run with PowerShell: " + ps);
 		
 		// initialize winrm4j and use it
 		log.log("Initializing winrm4j context...");
@@ -149,19 +160,32 @@ public class CheckerMain {
 		}
 		rmbuilder.port(port);
 		rmbuilder.useHttps(useHttps);
+		// disable cert checks does not seem to be working
+		// creating custom "return true;" HostnameVerifier does not work either
 		rmbuilder.disableCertificateChecks(ignoreCertProblem);
 		rmbuilder.context(rmctx);
 		WinRmTool rmtool = rmbuilder.build();
-		rmtool.setRetriesForConnectionFailures(CheckerMain.DEFAULT_CONNECTION_RETRIES);
 		log.log("Done.");
 		
-		//run command, get response
-		if (cmd == null) {
+		// determine default command - for cmd and for powershell
+		if (cmd == null && !ps) {
 			log.log("Remote command not specified. Defaulting.");
 			cmd = CheckerMain.DEFAULT_REMOTE_COMMAND;
 		}
+		if (cmd == null && ps) {
+			log.log("Remote PowerShell command not specified. Defaulting.");
+			cmd = CheckerMain.DEFAULT_REMOTE_PS_COMMAND;
+		}
+		
+		//run command, get response
+		//TODO: exception handling
 		log.log("Executing command '" + cmd + "'...");
-		WinRmToolResponse rmresponse = rmtool.executeCommand(cmd);
+		WinRmToolResponse rmresponse;
+		if (ps) {
+			rmresponse = rmtool.executePs(cmd);
+		} else {
+			rmresponse = rmtool.executeCommand(cmd);
+		}
 		log.log("Done.");
 		log.log("Response STDOUT:\n" + rmresponse.getStdOut());
 		log.log("Response STDERR:\n" + rmresponse.getStdErr());
