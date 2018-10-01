@@ -141,7 +141,7 @@ public class CheckerMain {
 		log.log("Ignore certificate problems: " + ignoreCertProblem);
 		log.log("Authentication: " + auth);
 		log.log("Username: " + user);
-		log.log("Password: " + pass);
+		//log.log("Password: " + pass);
 		log.log("Remote command: " + cmd);
 		log.log("Run with PowerShell: " + ps);
 		
@@ -178,18 +178,29 @@ public class CheckerMain {
 		}
 		
 		//run command, get response
-		//TODO: exception handling
 		log.log("Executing command '" + cmd + "'...");
-		WinRmToolResponse rmresponse;
-		if (ps) {
-			rmresponse = rmtool.executePs(cmd);
-		} else {
-			rmresponse = rmtool.executeCommand(cmd);
+		WinRmToolResponse rmresponse = null;
+		boolean rmresponseOk = true;
+		try {
+			if (ps) {
+				rmresponse = rmtool.executePs(cmd);
+			} else {
+				rmresponse = rmtool.executeCommand(cmd);
+			}
+		} catch (Exception e) {
+			//TODO:
+			//we silently hope for the cxf logging - once logging is corrected, we will need
+			//to add proper exception handling here
+			rmresponseOk = false;
 		}
+		
 		log.log("Done.");
-		log.log("Response STDOUT:\n" + rmresponse.getStdOut());
-		log.log("Response STDERR:\n" + rmresponse.getStdErr());
-		log.log("Response status code: " + rmresponse.getStatusCode());
+		
+		if (rmresponseOk) {
+				log.log("Response STDOUT:\n" + rmresponse.getStdOut());
+				log.log("Response STDERR:\n" + rmresponse.getStdErr());
+				log.log("Response status code: " + rmresponse.getStatusCode());
+		}
 		
 		//cleanup
 		rmctx.shutdown();
